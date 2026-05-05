@@ -1,11 +1,15 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import CoverCanvas from './components/CoverCanvas'
 import EditorControls from './components/EditorControls'
 import { extractColors } from './utils/color'
 import type { RGB } from './utils/color'
+import { LocaleProvider, useLocale } from './contexts/LocaleContext'
 
-function getTodayStr(): string {
+function getTodayStr(locale: 'en' | 'cn'): string {
   const d = new Date()
+  if (locale === 'cn') {
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+  }
   const months = [
     'JAN','FEB','MAR','APR','MAY','JUN',
     'JUL','AUG','SEP','OCT','NOV','DEC'
@@ -13,15 +17,20 @@ function getTodayStr(): string {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
-export default function App() {
+function AppContent() {
+  const { locale, t, setLocale } = useLocale()
   const [image, setImage] = useState<HTMLImageElement | null>(null)
   const [title, setTitle] = useState('')
-  const [dateStr, setDateStr] = useState(getTodayStr())
+  const [dateStr, setDateStr] = useState(() => getTodayStr(locale))
   const [splitRatio, setSplitRatio] = useState(50)
   const [fontSize, setFontSize] = useState(27)
   const [backgroundColor, setBackgroundColor] = useState<RGB>({ r: 220, g: 210, b: 200 })
   const [palette, setPalette] = useState<RGB[]>([{ r: 220, g: 210, b: 200 }])
   const [grain, setGrain] = useState(true)
+
+  useEffect(() => {
+    setDateStr(getTodayStr(locale))
+  }, [locale])
 
   const handleImageUpload = useCallback((file: File) => {
     const url = URL.createObjectURL(file)
@@ -46,12 +55,10 @@ export default function App() {
     const topHeight = Math.round(1350 * (splitRatio / 100))
     const bottomHeight = 1350 - topHeight
 
-    // Background
     const { r, g, b } = backgroundColor
     ctx.fillStyle = `rgb(${r},${g},${b})`
     ctx.fillRect(0, 0, 1080, topHeight)
 
-    // Grain
     if (grain) {
       const imageData = ctx.getImageData(0, 0, 1080, topHeight)
       const data = imageData.data
@@ -64,7 +71,6 @@ export default function App() {
       ctx.putImageData(imageData, 0, 0)
     }
 
-    // Photo (cover fit)
     const imgRatio = image.naturalWidth / image.naturalHeight
     const targetRatio = 1080 / bottomHeight
     let sx = 0, sy = 0, sw = image.naturalWidth, sh = image.naturalHeight
@@ -77,7 +83,6 @@ export default function App() {
     }
     ctx.drawImage(image, sx, sy, sw, sh, 0, topHeight, 1080, bottomHeight)
 
-    // Text
     const textColor =
       (0.2126 * (r/255) + 0.7152 * (g/255) + 0.0722 * (b/255)) > 0.5
         ? '#1a1a1a'
@@ -88,7 +93,6 @@ export default function App() {
     const centerX = 540
     const centerY = topHeight / 2
 
-    // Line
     ctx.strokeStyle = textColor
     ctx.lineWidth = 1.5
     const lineWidth = Math.max(40, fontSize * 1.5)
@@ -97,11 +101,9 @@ export default function App() {
     ctx.lineTo(centerX + lineWidth / 2, centerY - fontSize * 1.6)
     ctx.stroke()
 
-    // Date
     ctx.font = `${Math.round(fontSize * 0.55)}px ui-monospace, 'SF Mono', Menlo, Consolas, monospace`
     ctx.fillText(dateStr.toUpperCase(), centerX, centerY - fontSize * 0.5)
 
-    // Title
     if (title.trim()) {
       ctx.font = `400 ${Math.round(fontSize)}px ui-sans-serif, system-ui, -apple-system, sans-serif`
       ctx.fillText(title.trim(), centerX, centerY + fontSize * 0.7)
@@ -115,22 +117,29 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Navbar */}
       <nav className="navbar">
         <div className="nav-left">
           <div className="logo-box" />
-          <span className="logo-text">Color Diary</span>
+          <span className="logo-text">{t.nav.brand}</span>
         </div>
         <div className="nav-right">
-          <span>EN</span>
-          <span>CN</span>
-          <span>ABOUT</span>
+          <span
+            style={{ cursor: 'pointer', color: locale === 'en' ? '#1a1a1a' : '#888' }}
+            onClick={() => setLocale('en')}
+          >
+            {t.nav.en}
+          </span>
+          <span
+            style={{ cursor: 'pointer', color: locale === 'cn' ? '#1a1a1a' : '#888' }}
+            onClick={() => setLocale('cn')}
+          >
+            {t.nav.cn}
+          </span>
+          <span>{t.nav.about}</span>
         </div>
       </nav>
 
-      {/* Main */}
       <div className="main">
-        {/* Preview */}
         <div className="preview-area">
           <div className="preview-wrapper">
             {image ? (
@@ -157,23 +166,23 @@ export default function App() {
                     }}
                     style={{ display: 'none' }}
                   />
-                  Upload a photo to get started
+                  {t.preview.placeholder}
                 </label>
               </div>
             )}
           </div>
         </div>
 
-        {/* Controls */}
         <div className="controls-area">
           <EditorControls
+            t={t.controls}
             onImageUpload={handleImageUpload}
             hasImage={!!image}
             title={title}
             onTitleChange={setTitle}
             dateStr={dateStr}
             onDateChange={setDateStr}
-            onResetDate={() => setDateStr(getTodayStr())}
+            onResetDate={() => setDateStr(getTodayStr(locale))}
             splitRatio={splitRatio}
             onSplitRatioChange={setSplitRatio}
             fontSize={fontSize}
@@ -191,5 +200,13 @@ export default function App() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <LocaleProvider>
+      <AppContent />
+    </LocaleProvider>
   )
 }

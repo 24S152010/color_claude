@@ -1,7 +1,9 @@
 import { rgbToHex } from '../utils/color'
 import type { RGB } from '../utils/color'
+import type { Translations } from '../locales'
 
 interface EditorControlsProps {
+  t: Translations['controls']
   onImageUpload: (file: File) => void
   hasImage: boolean
   title: string
@@ -23,6 +25,7 @@ interface EditorControlsProps {
 }
 
 export default function EditorControls({
+  t,
   onImageUpload,
   hasImage,
   title,
@@ -78,7 +81,7 @@ export default function EditorControls({
         height: '100%',
       }}
     >
-      <Section label="PHOTO">
+      <Section label={t.photo}>
         <label
           style={{
             display: 'inline-flex',
@@ -105,16 +108,16 @@ export default function EditorControls({
             onChange={handleFile}
             style={{ display: 'none' }}
           />
-          {hasImage ? 'REPLACE PHOTO' : 'UPLOAD PHOTO'}
+          {hasImage ? t.replacePhoto : t.uploadPhoto}
         </label>
       </Section>
 
-      <Section label="TITLE">
+      <Section label={t.title}>
         <input
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="ENTER TITLE..."
+          placeholder={t.enterTitle}
           style={{
             width: '100%',
             padding: '8px 0',
@@ -129,7 +132,7 @@ export default function EditorControls({
         />
       </Section>
 
-      <Section label="DATE">
+      <Section label={t.date}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
             type="text"
@@ -159,12 +162,12 @@ export default function EditorControls({
               color: '#666',
             }}
           >
-            RESET
+            {t.reset}
           </button>
         </div>
       </Section>
 
-      <Section label="SPLIT RATIO">
+      <Section label={t.splitRatio}>
         <div
           style={{
             display: 'flex',
@@ -187,7 +190,7 @@ export default function EditorControls({
         </div>
       </Section>
 
-      <Section label="FONT SIZE">
+      <Section label={t.fontSize}>
         <div
           style={{
             display: 'flex',
@@ -209,7 +212,7 @@ export default function EditorControls({
         </div>
       </Section>
 
-      <Section label="BACKGROUND COLOR">
+      <Section label={t.backgroundColor}>
         <div
           style={{
             display: 'flex',
@@ -250,7 +253,7 @@ export default function EditorControls({
               color: '#666',
             }}
           >
-            RANDOM
+            {t.random}
           </button>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -275,7 +278,7 @@ export default function EditorControls({
         </div>
       </Section>
 
-      <Section label="GRAIN">
+      <Section label={t.grain}>
         <button
           onClick={onToggleGrain}
           style={{
@@ -289,7 +292,7 @@ export default function EditorControls({
             transition: 'all 0.2s',
           }}
         >
-          {grain ? 'ON' : 'OFF'}
+          {grain ? t.on : t.off}
         </button>
       </Section>
 
@@ -307,7 +310,7 @@ export default function EditorControls({
             cursor: 'pointer',
           }}
         >
-          EXPORT AS PNG
+          {t.exportPng}
         </button>
       </div>
     </div>

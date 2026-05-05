@@ -14,7 +14,9 @@
       "Bash(npm i *)",
       "Bash(vercel --version)",
       "Bash(npx vercel *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(netstat -ano)"
     ]
   }
 }
