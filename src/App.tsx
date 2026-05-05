@@ -105,21 +105,21 @@ function AppContent() {
     const centerX = 540
     const centerY = topHeight / 2
 
+    if (title.trim()) {
+      ctx.font = `400 ${Math.round(fontSize)}px ui-sans-serif, system-ui, -apple-system, sans-serif`
+      ctx.fillText(title.trim(), centerX, centerY - fontSize * 1.6)
+    }
+
     ctx.strokeStyle = textColor
     ctx.lineWidth = 1.5
     const lineWidth = Math.max(40, fontSize * 1.5)
     ctx.beginPath()
-    ctx.moveTo(centerX - lineWidth / 2, centerY - fontSize * 1.6)
-    ctx.lineTo(centerX + lineWidth / 2, centerY - fontSize * 1.6)
+    ctx.moveTo(centerX - lineWidth / 2, centerY - fontSize * 0.5)
+    ctx.lineTo(centerX + lineWidth / 2, centerY - fontSize * 0.5)
     ctx.stroke()
 
     ctx.font = `${Math.round(fontSize * 0.55)}px ui-monospace, 'SF Mono', Menlo, Consolas, monospace`
-    ctx.fillText(dateStr.toUpperCase(), centerX, centerY - fontSize * 0.5)
-
-    if (title.trim()) {
-      ctx.font = `400 ${Math.round(fontSize)}px ui-sans-serif, system-ui, -apple-system, sans-serif`
-      ctx.fillText(title.trim(), centerX, centerY + fontSize * 0.7)
-    }
+    ctx.fillText(dateStr.toUpperCase(), centerX, centerY + fontSize * 0.7)
 
     const link = document.createElement('a')
     link.download = `color-diary-${Date.now()}.png`
