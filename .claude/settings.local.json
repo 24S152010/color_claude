@@ -3,7 +3,18 @@
     "allow": [
       "Bash(curl *)",
       "Bash(npm run *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git config *)",
+      "Bash(winget install *)",
+      "Bash(/c/Program Files/GitHub CLI/gh.exe auth *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(npm i *)",
+      "Bash(vercel --version)",
+      "Bash(npx vercel *)",
+      "Bash(git pull *)"
     ]
   }
 }
