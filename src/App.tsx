@@ -106,7 +106,7 @@ function AppContent() {
     const centerY = topHeight / 2
 
     if (title.trim()) {
-      ctx.font = `400 ${Math.round(fontSize)}px ui-sans-serif, system-ui, -apple-system, sans-serif`
+      ctx.font = `400 ${Math.round(fontSize)}px 'Courier Prime', ui-monospace, monospace`
       ctx.fillText(title.trim(), centerX, centerY - fontSize * 1.6)
     }
 
