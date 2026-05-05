@@ -67,7 +67,10 @@ export function extractColors(image: HTMLImageElement): {
   ctx.drawImage(image, 0, 0, size, size)
 
   const data = ctx.getImageData(0, 0, size, size).data
-  const colorMap = new Map<string, { rgb: RGB; count: number }>()
+  const colorMap = new Map<
+    string,
+    { sumR: number; sumG: number; sumB: number; count: number }
+  >()
 
   const step = 24
   for (let i = 0; i < data.length; i += 4) {
@@ -85,13 +88,26 @@ export function extractColors(image: HTMLImageElement): {
 
     const existing = colorMap.get(key)
     if (existing) {
+      existing.sumR += r
+      existing.sumG += g
+      existing.sumB += b
       existing.count++
     } else {
-      colorMap.set(key, { rgb: { r: qr, g: qg, b: qb }, count: 1 })
+      colorMap.set(key, { sumR: r, sumG: g, sumB: b, count: 1 })
     }
   }
 
-  const sorted = Array.from(colorMap.values()).sort((a, b) => b.count - a.count)
+  const sorted = Array.from(colorMap.entries())
+    .map(([key, val]) => ({
+      key,
+      rgb: {
+        r: Math.round(val.sumR / val.count),
+        g: Math.round(val.sumG / val.count),
+        b: Math.round(val.sumB / val.count),
+      },
+      count: val.count,
+    }))
+    .sort((a, b) => b.count - a.count)
 
   const uniqueColors: RGB[] = []
   for (const item of sorted) {
