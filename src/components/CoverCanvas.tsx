@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useRef, useCallback } from 'react'
 import { rgbToHex, getContrastText } from '../utils/color'
 import type { RGB } from '../utils/color'
 
@@ -30,27 +30,32 @@ const CoverCanvas = forwardRef<HTMLCanvasElement, CoverCanvasProps>(
     forwardedRef
   ) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const bgCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
+    // Background layer: only re-render when background-related props change
     useEffect(() => {
-      const canvas = canvasRef.current
-      if (!canvas) return
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
+      let offscreen = bgCanvasRef.current
+      if (!offscreen) {
+        offscreen = document.createElement('canvas')
+        bgCanvasRef.current = offscreen
+      }
+      offscreen.width = width
+      offscreen.height = height
 
-      canvas.width = width
-      canvas.height = height
+      const offCtx = offscreen.getContext('2d')
+      if (!offCtx) return
 
       const topHeight = Math.round(height * (splitRatio / 100))
       const bottomHeight = height - topHeight
 
       // Background
       const bgHex = rgbToHex(backgroundColor)
-      ctx.fillStyle = bgHex
-      ctx.fillRect(0, 0, width, topHeight)
+      offCtx.fillStyle = bgHex
+      offCtx.fillRect(0, 0, width, topHeight)
 
       // Grain
       if (grain) {
-        const imageData = ctx.getImageData(0, 0, width, topHeight)
+        const imageData = offCtx.getImageData(0, 0, width, topHeight)
         const data = imageData.data
         for (let i = 0; i < data.length; i += 4) {
           const noise = (Math.random() - 0.5) * 18
@@ -58,7 +63,7 @@ const CoverCanvas = forwardRef<HTMLCanvasElement, CoverCanvasProps>(
           data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
         }
-        ctx.putImageData(imageData, 0, 0)
+        offCtx.putImageData(imageData, 0, 0)
       }
 
       // Photo
@@ -78,7 +83,7 @@ const CoverCanvas = forwardRef<HTMLCanvasElement, CoverCanvasProps>(
           sy = (image.naturalHeight - sh) / 2
         }
 
-        ctx.drawImage(
+        offCtx.drawImage(
           image,
           sx,
           sy,
@@ -90,8 +95,23 @@ const CoverCanvas = forwardRef<HTMLCanvasElement, CoverCanvasProps>(
           bottomHeight
         )
       }
+    }, [image, splitRatio, backgroundColor, grain, width, height])
 
-      // Text
+    // Text layer: copy background then draw text (fast, no grain re-generation)
+    useEffect(() => {
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      const offscreen = bgCanvasRef.current
+      if (!offscreen) return
+
+      if (canvas.width !== width) canvas.width = width
+      if (canvas.height !== height) canvas.height = height
+      ctx.drawImage(offscreen, 0, 0)
+
+      const topHeight = Math.round(height * (splitRatio / 100))
       const textColor = getContrastText(backgroundColor)
       ctx.fillStyle = textColor
       ctx.textAlign = 'center'
@@ -117,18 +137,20 @@ const CoverCanvas = forwardRef<HTMLCanvasElement, CoverCanvasProps>(
         ctx.font = `400 ${Math.round(fontSize)}px ui-sans-serif, system-ui, -apple-system, sans-serif`
         ctx.fillText(title.trim(), centerX, centerY + fontSize * 0.7)
       }
-    }, [image, title, dateStr, splitRatio, fontSize, backgroundColor, grain, width, height])
+    }, [title, dateStr, fontSize, splitRatio, backgroundColor, width, height])
+
+    const setRef = useCallback((node: HTMLCanvasElement | null) => {
+      canvasRef.current = node
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(node)
+      } else if (forwardedRef) {
+        forwardedRef.current = node
+      }
+    }, [forwardedRef])
 
     return (
       <canvas
-        ref={(node) => {
-          canvasRef.current = node
-          if (typeof forwardedRef === 'function') {
-            forwardedRef(node)
-          } else if (forwardedRef) {
-            forwardedRef.current = node
-          }
-        }}
+        ref={setRef}
         style={{
           width: '100%',
           height: 'auto',

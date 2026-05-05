@@ -24,6 +24,31 @@ interface EditorControlsProps {
   onExport: () => void
 }
 
+function Section({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div
+        style={{
+          fontSize: 11,
+          letterSpacing: '1.5px',
+          color: '#999',
+          marginBottom: 12,
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function EditorControls({
   t,
   onImageUpload,
@@ -49,29 +74,6 @@ export default function EditorControls({
     const file = e.target.files?.[0]
     if (file) onImageUpload(file)
   }
-
-  const Section = ({
-    label,
-    children,
-  }: {
-    label: string
-    children: React.ReactNode
-  }) => (
-    <div style={{ marginBottom: 28 }}>
-      <div
-        style={{
-          fontSize: 11,
-          letterSpacing: '1.5px',
-          color: '#999',
-          marginBottom: 12,
-          fontWeight: 500,
-        }}
-      >
-        {label}
-      </div>
-      {children}
-    </div>
-  )
 
   return (
     <div

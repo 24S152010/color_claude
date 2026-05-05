@@ -44,6 +44,18 @@ function AppContent() {
     img.src = url
   }, [])
 
+  const handleResetDate = useCallback(() => {
+    setDateStr(getTodayStr(locale))
+  }, [locale])
+
+  const handleRandomColor = useCallback(() => {
+    setBackgroundColor(palette[Math.floor(Math.random() * palette.length)] || backgroundColor)
+  }, [palette, backgroundColor])
+
+  const handleToggleGrain = useCallback(() => {
+    setGrain((g) => !g)
+  }, [])
+
   const handleExport = useCallback(() => {
     if (!image) return
     const canvas = document.createElement('canvas')
@@ -182,7 +194,7 @@ function AppContent() {
             onTitleChange={setTitle}
             dateStr={dateStr}
             onDateChange={setDateStr}
-            onResetDate={() => setDateStr(getTodayStr(locale))}
+            onResetDate={handleResetDate}
             splitRatio={splitRatio}
             onSplitRatioChange={setSplitRatio}
             fontSize={fontSize}
@@ -190,11 +202,9 @@ function AppContent() {
             backgroundColor={backgroundColor}
             palette={palette}
             onSelectColor={setBackgroundColor}
-            onRandomColor={() =>
-              setBackgroundColor(palette[Math.floor(Math.random() * palette.length)] || backgroundColor)
-            }
+            onRandomColor={handleRandomColor}
             grain={grain}
-            onToggleGrain={() => setGrain((g) => !g)}
+            onToggleGrain={handleToggleGrain}
             onExport={handleExport}
           />
         </div>
